@@ -1,2 +1,0 @@
-# notes
-Notes by VanniAmor
