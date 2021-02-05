@@ -308,6 +308,15 @@ redis-cli --cluster check 127.0.0.1:6379
 
 
 
+## 配置参数详解
+
+- \- cluster-enabled `<yes/no>`: 是否启用集群模式，默认是注释掉的，相当于no使用单机模式
+- cluster-config-file `<filename>`: 集群配置文件名，集群会自动生成和更新这个文件，不建议手动修改，用于记录集群的基本信息，例如状态，持久化变量等等。注意不要和其它配置文件同名，一般使用nodes-6379.conf，6379是使用的端口
+- cluster-node-timeout `<milliseconds>`: 集群节点的不可用时间(超时时间)，超过这个时间就会被认为下线，单位是毫秒，一般是15000毫秒
+- cluster-slave-validity-factor `<factor>`: 集群主从切换的控制因素之一，需要联合上述cluster-node-timeout参数一起使用。如果设为0，当主节点下线的时候，不管从节点与主节点断开连接的时间有多久，集群都会尝试主从切换。如果该值设为大于0，主从间的最大断线时间会通过node timeout x cluster-node-timeout计算。例如，如果cluster-node-timeout=5000，cluster-slave-validity-factor=10，那么如果一个从节点与主节点断线超过5000x10=50000ms=50s的话，当主节点下线的时候，该从节点都不会被切换为主节点。需要注意的是，如果该值设为非0的话，在一个主节点下线的时候，集群有可能会因为从节点不能进行切换导致不能正常运作。在这种情况下，集群只能在原主节点重新上线连接到集群的时候才能恢复正常运作
+- cluster-migration-barrier` <count>`: 与同一主节点连接的从节点最少个数，如果实际连接到同一个主节点的从节点个数超过该值，多余的从节点可以被迁移到其它没有从节点连接的主节点
+- cluster-require-full-coverage` <yes/no>`: 默认值为yes，意思是需要集群内的全部hash slots都正常工作才能接收写命令，如果设为0，那么可以允许部分hash slots下线的情况下继续执行读操作
+
 
 
 ## 总结
