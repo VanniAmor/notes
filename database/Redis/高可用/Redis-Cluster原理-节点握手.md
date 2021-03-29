@@ -161,7 +161,12 @@ struct clusterNode {
  
     //保存连接节点所需的有关信息
     clusterLink *link;
-    // ...
+    
+    //记录当前节点处理的slot，若索引i上的二进制位的值为1，那么表示节点负责处理槽i
+    unsigned char slots[16384/8];
+    
+    //记录该节点负责处理的槽的数量
+    int numslots;
 };
 ```
 
@@ -213,9 +218,12 @@ typedef struct clusterState {
     int size;
  
     //集群节点名单（包括myself 节点）
-    //字典的键为节点的名字，字典的值为节点对应的clusterNode 结构
+    //字典的键为节点的名字（运行ID），字典的值为节点对应的clusterNode 结构
     dict *nodes;
-    // ...
+    
+    //包含集群中所有slot的指派信息，每个数组项都是一个指向clusterNode结构的指针
+    clusterNode *slots[16384];
+    
 } clusterState;
 ```
 

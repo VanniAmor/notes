@@ -317,6 +317,44 @@ redis-cli --cluster check 127.0.0.1:6379
 - cluster-migration-barrier` <count>`: 与同一主节点连接的从节点最少个数，如果实际连接到同一个主节点的从节点个数超过该值，多余的从节点可以被迁移到其它没有从节点连接的主节点
 - cluster-require-full-coverage` <yes/no>`: 默认值为yes，意思是需要集群内的全部hash slots都正常工作才能接收写命令，如果设为0，那么可以允许部分hash slots下线的情况下继续执行读操作
 
+## 新节点加入集群
+
+在集群运行过程中，可以通过两种方式新增节点
+
+- cluster meet命令，新节点与集群中的节点进行握手，然后通过集群节点间的ping命令传播
+- redis-cli --cluster命令，该命令的本质也是cluster meet
+
+```shell
+redis-cli --cluster add-node new_host:new_port existing_host:existing_port --cluster-slave --cluster-master-id <arg>
+ 
+# 例如下面将6385加入到6379所属的集群中，并且作为117457eab5071954faab5e81c3170600d5192270的从节点
+redis-cli --cluster add-node 127.0.0.1:6385 127.0.0.1:6379 --cluster-slave --cluster-master-id 117457eab5071954faab5e81c3170600d5192270
+```
+
+- --cluster-slave和--cluster-master-id是可选的，在设置从节点的时候才会用。如果不指定--cluster-master-id会随机分配到任意一个主节点
+
+
+
+**正式环境建议使用redis-cli cluster命令加入新节点**，该命令内部会执行新节点状态检查，如果新节点已经加入其他集群或者包含数据，则放弃集群加入操作并打印如下信息：
+
+![image-20210207104340419](https://gitee.com/Vanni/pic-bed/raw/master/img/image-20210207104340419.png)
+
+
+
+如果我们手动执行cluster meet命令加入已经存在于其他集群的节点，会造成被加入节点的集群合并到现有集群的情况，从而造成数据丢失和错乱， 后果非常严重，线上谨慎操作
+
+
+
+## 集群的功能限制
+
+Cluster在功能上相对单机来说存在一些限制，在此处稍作总结
+
+- **1）key批量操作支持有限。**如mset、mget，目前只支持具有相同slot值的 key执行批量操作。对于映射为不同slot值的key由于执行mget、mget等操作可 能存在于多个节点上因此不被支持
+- **2）key事务操作支持有限。**同理只支持多key在同一节点上的事务操 作，当多个key分布在不同的节点上时无法使用事务功能
+- 3）key作为数据分区的最小粒度，因此**不能将一个大的键值对象如 hash、list等映射到不同的节点**
+- **4）不支持多数据库空间**。单机下的Redis可以支持16个数据库，集群模 式下只能使用一个数据库空间，即db0
+- **5）复制结构只支持一层，**从节点只能复制主节点，不支持嵌套树状复 制结构
+
 
 
 ## 总结
