@@ -76,6 +76,40 @@
 
 
 
+## 耐久模式
+
+
+
+WAL根据数据刷盘的频率，可以分为三种耐久性模式
+
+
+
+### Full Sync
+
+保证在返回之前将记录刷新到磁盘, 从而使数据能够在**系统级别**的崩溃中幸存下来
+
+即每次写入操作都直接落盘
+
+[![gAwPgA.png](https://z3.ax1x.com/2021/04/30/gAwPgA.png)](https://imgtu.com/i/gAwPgA)
+
+
+
+### Write Only
+
+保证记录写入操作系统的文件中, 然后返回给用户, 允许数据在**进程级别**的崩溃后仍然幸存
+
+即每次写入操作都把数据写入到操作系统内核缓存中
+
+[![gABgcd.png](https://z3.ax1x.com/2021/04/30/gABgcd.png)](https://imgtu.com/i/gABgcd)
+
+
+
+### No Sync
+
+即将记录保存在内存的缓冲区中, 但不保证将其立即写入文件系统。
+
+[![gABqjs.png](https://z3.ax1x.com/2021/04/30/gABqjs.png)](https://imgtu.com/i/gABqjs)
+
 
 
 ## 参考文献
@@ -83,3 +117,5 @@
 https://zhuanlan.zhihu.com/p/228335203
 
 https://blog.csdn.net/hguisu/article/details/7408047
+
+https://cloud.tencent.com/developer/article/1405902
