@@ -45,8 +45,8 @@
 -x  检查文件是否存在且可执行
 -O  检查文件是否存在并且被当前用户拥有
 -G  检查文件是否存在并且默认组为当前用户组
-file1 -nt file2  检查file1是否比file2新
-file1 -ot file2  检查file1是否比file2旧
+file1 -nt file2  检查file1是否比file2新	（nt即 newer than）
+file1 -ot file2  检查file1是否比file2旧	（ot即 older than）
 ```
 
 ### 1.4）逻辑运算
