@@ -57,7 +57,6 @@ RPC，即Remote Procedure Call，远程过程调度。可以让一台机器（�
 2. Consumer将需要调用的方法名称和参数通过Socket发送给Provider；
 3. Provider获取Consumer请求的数据并进行解析，执行具体的某一个方法，构造返回数据，返回给Consumer；
 4. Consumer获得Provider返回的数据进行相应的处理；
-   
 
 rpc框架的不同之处，就在于序列化协议的选择和内容的封装上
 
