@@ -15,6 +15,43 @@ CheckPoint目的是解决以下几个问题：
 
 
 
+## LSN值
+
+**对于InnoDB存储引擎而言，是通过LSN（Log Sequence Number）来标记版本的。** LSN表示数据库开启到现在已经产生的日志量。单位是字节，值越大，说明数据库更新越多。通过这个值可以计算日志的产生速度
+
+
+
+LSN是8字节的数字，每个页有LSN，重做日志中也有LSN，Checkpoint也有LSN。
+
+有几中LSN，如下
+
+- Log sequence number，表示数据库开启到现在已经产生的日志量，即LSN,日志序列号，单位是字节，值越大，说明数据库更新越多。通过它可以计算日志的产生速度。
+
+- Log flushed up to，表示日志已经刷新到哪个点了，其值 > = LSN
+
+  LSN - Log flushed up to表示log buffer中还有多少日志未刷新到磁盘，如果系统hang住了，可以通过 LSN - Log flushed up to来看下是否是由于log buffer满了导致系统hang住了。一般情况下，如果超过30%的日志还没有刷新到日志文件中，就需要增大**innodb_log_buffer_size**的值。
+
+- Pages checkPoint at，表示最后一次检查点的log位置，
+
+
+
+
+
+## CheckPoint分类
+
+有两种CheckPoint：
+
+- Share CheckPoint，发生在数据库关闭时将所有脏页都刷新回磁盘，是默认的工作方式，即参数 **innodb_fast_shutdown=1**， 这个过程是阻塞的
+- Fuzzy CheckPoint
+
+
+
+
+
+
+
+
+
 ## 参考文献
 
 https://my.oschina.net/fileoptions/blog/2988622
@@ -23,3 +60,6 @@ https://www.cnblogs.com/chenpingzhao/p/5107480.html
 
 https://www.cnblogs.com/geaozhang/p/7341333.html
 
+https://blog.csdn.net/qq_24432315/article/details/108162809
+
+https://www.cnblogs.com/wy123/p/8353245.html
