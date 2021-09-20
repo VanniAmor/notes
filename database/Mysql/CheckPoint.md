@@ -79,15 +79,24 @@ LSN是8字节的数字，每个页有LSN，重做日志中也有LSN，Checkpoint
 
 
 
+![image-20210731112940757](C:/Users/99380/AppData/Roaming/Typora/typora-user-images/image-20210731112940757.png)
+
 当在MySQL中对InnoDB表进行更改时，这些更改首先存储在InnoDB日志缓冲区的内存中，然后写入通常称为重做日志（redo logs）的InnoDB日志文件中。
 
 日志缓冲区是内存存储区域，用于保存要写入磁盘上的日志文件的数据。日志缓冲区大小由innodb_log_buffer_size 变量定义，默认大小为16MB。
 
 日志缓冲区的内容定期刷新到磁盘。较大的日志缓冲区可以运行大型事务，而无需在事务提交之前将重做日志数据写入磁盘。因此，如果有更新，插入或删除许多行的事务，则增加日志缓冲区的大小可以节省磁盘I/O。
 
-- innodb_flush_log_at_trx_commit ：控制如何将日志缓冲区的内容写入并刷新到磁盘。（对应WAL的三种方式）
+![image-20210731113311922](C:/Users/99380/AppData/Roaming/Typora/typora-user-images/image-20210731113311922.png)
 
+
+
+- innodb_flush_log_at_trx_commit ：控制如何将日志缓冲区的内容写入并刷新到磁盘。（对应WAL的三种方式），默认为1
 - innodb_flush_log_at_timeout ：控制日志刷新频率。
+
+
+
+【注意】由于进程调度策略问题，“每秒执行一次flush到硬盘的操作”，并不是100%保证的每秒
 
 
 
@@ -106,7 +115,6 @@ LSN是8字节的数字，每个页有LSN，重做日志中也有LSN，Checkpoint
 > 要调整 innodb_log_buffer_size 或 innodb_log_file_size 变量，必须在MySQL的配置文件中显式定义它们。在进行这些更改之前，请关闭实例，以确保MySQL正确无误地停止运行。如果在关闭过程中出现错误，则现有的日志文件可能尚未完全写入数据文件，并且数据可能会丢失。
 >
 > 总结：在考虑MySQL数据库性能时，Innodb_log_buffer_size和Innodb_log_file_size是要分析的两个重要变量。如果大型事务导致过多的磁盘I/O，则可以增加InnoDB日志缓冲区。出于相同的原因，InnoDB日志文件通常会基于默认值增加。如果它变得太快，则检查点刷新活动会增加，并且可能会导致性能降低。
-> 
 
 
 
