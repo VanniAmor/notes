@@ -1,24 +1,26 @@
+修改以往传统的用户名密码登录方式，改为使用秘钥进行登录，主机安全性得以提高
+
+按序执行以下步骤，均以root账号运行
+
+- 生成公钥私钥
+- 配置ssh登录方式
+- 导入秘钥到对应账号
+
+
+
 ## 生成公钥、私钥
 
 有多少方式可以生成可信任的公钥、私钥，包括但不限于git、ssh-keygen、MobaXterm，这里介绍ssh-keygen方式
 
-![image-20210402201614963](C:%5CUsers%5Cwb.luoweile%5CAppData%5CRoaming%5CTypora%5Ctypora-user-images%5Cimage-20210402201614963.png)
+```shell
+sudo ssh-keygen -t rsa -b 4096
+```
+
+![](https://raw.githubusercontent.com/VanniAmor/ImgBed/master/20180925145147317)
 
 
-
-在`/root/.ssh`下，会生成以下文件：
-
-- authorized_keys:  存放远程免密登录的公钥,主要通过这个文件记录多台机器的公钥
-
-- id_rsa:  生成的私钥文件
-- id_rsa.pub:   生成的公钥文件
-- know_hosts:  已知的主机公钥清单
 
 私钥发送给客户端，公钥保存在 authorized_keys
-
-
-
-**注意，不同用户的公钥是保存在其自己的home目录下.ssh中的authorized_key文件中**
 
 
 
@@ -27,15 +29,14 @@
 ```shell
 vim  /etc/ssh/sshd_config 
 
-StrictModes no
-# 开启rsa验证 
-RSAAuthentication yes 
 # 是否使用公钥 
 PubkeyAuthentication yes 
 # 公钥保存位置 
 AuthorizedKeysFile    .ssh/authorized_keys 
 # 禁止使用密码登录 
-PasswordAuthentication no: 
+PasswordAuthentication no
+# 允许ROOT登录
+PermitRootLogin yes
 ```
 
 
@@ -45,6 +46,61 @@ PasswordAuthentication no:
 ```shell
 systemctl restart sshd
 ```
+
+
+
+
+
+## 给ROOT账号设置秘钥登录
+
+```shell
+#导入秘钥（需要先生成秘钥, 秘钥地址指定为 /roottest_rsa）
+cat test_rsa.pub >> /root/.ssh/authorized_keys
+
+#检查确认
+cat /home/zero/.ssh/authorized_keys
+
+#修改权限
+chmod 700 /root/.ssh
+chmod 600 /root/.ssh/authorized_keys
+```
+
+
+
+
+
+## 指定账号设置秘钥登录
+
+```shell
+#添加用户
+sudo  useradd  zero -d /home/zero
+
+#设定sudo密码
+sudo  passwd  zero
+#请输入新用户sudo密码
+
+#创建目录及文件
+sudo mkdir /home/zero/.ssh
+sudo touch /home/zero/.ssh/authorized_keys
+
+#修正所有者
+sudo chown -R zero. /home/zero/.ssh
+
+#导入秘钥（需要先生成秘钥, 秘钥地址指定为 /home/zero/test_rsa）
+sudo sh -c 'cat zero_rsa.pub >> /home/zero/.ssh/authorized_keys'
+
+#检查确认
+sudo cat /home/zero/.ssh/authorized_keys
+
+#修改权限
+sudo chmod 700 /home/zero/.ssh
+sudo chmod 600 /home/zero/.ssh/authorized_keys
+————————————————
+版权声明：本文为CSDN博主「Poison_毒药」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/qq_15504597/article/details/82839414
+```
+
+
 
 
 
