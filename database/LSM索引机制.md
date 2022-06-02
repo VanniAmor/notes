@@ -1,6 +1,10 @@
 ## 概论
 
-LSM，即 log-structed merget-tree
+LSM，即 log-structed merget-tree，是一种对频繁写操作非常友好的数据结构，同时兼顾了查询效率
+
+LSM tree 是许多 key-value 型或日志型数据库所依赖的核心数据结构，例如 [BigTable](https://cloud.google.com/bigtable)、[HBase](https://hbase.apache.org/)、[Cassandra](https://cassandra.apache.org/)、[LevelDB](https://github.com/google/leveldb)、[SQLite](https://www.sqlite.org/)、[Scylla](https://www.scylladb.com/)、[RocksDB](https://rocksdb.org/) 等
+
+
 
 
 
