@@ -43,8 +43,6 @@ RPC，即Remote Procedure Call，远程过程调度。可以让一台机器（�
 
 序列化协议包括：基于文本编码的JSON，XML，也有基于二进制编码的protobuf hessian等
 
-
-
 ## TCP实现
 
 

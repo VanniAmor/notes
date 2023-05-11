@@ -1,0 +1,1 @@
+https://subingwen.cn/linux/makefile/#6-2-%E7%89%88%E6%9C%AC2

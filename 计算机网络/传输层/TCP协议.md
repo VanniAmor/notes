@@ -139,6 +139,38 @@ TCP中使用滑动窗口机制来实现流量控制
 
 ![image-20210313183735190](https://gitee.com/Vanni/pic-bed/raw/master/img/image-20210313183735190.png)
 
+### 慢启动
+
+表示TCP建立连接完成后，一开始不要发送大量的数据，而是先探测一下网络的拥塞程度。由小到大逐渐增加拥塞窗口的大小。如果没有出现丢包，**每收到一个ACK，就将拥塞窗口（cwnd）大小+1（单位是MSS）。每轮次**发送窗口增加一倍，呈指数增长。
+
+- TCP连接完成，初始化cwnd = 1，表明可以传一个MSS单位大小的数据
+- 每当收到一个ACK，cwnd = cwnd + 1
+- 每当过了一个RTT，cwnd就增加一倍，呈指数上升
+
+### 拥塞避免
+
+为了防止cwnd增长过大引起网络拥塞，还需设置一个**慢启动阈值 ssthresh(slow start threshold) **，当`cwnd`到达该阀值后，就好像水管被关小了水龙头一样，减少拥塞状态。即当**cwnd >ssthresh**时，进入了**拥塞避免**算法。
+
+- 每收到一个ACK时，cwnd = cwnd + 1/cwnd
+- 当每过一个RTT时，cwnd = cwnd + 1
+
+cwnd呈现线性上升
+
+
+
+此时当网络拥堵，发送丢包时，有两种情况
+
+- RTO超时重传
+  - ssthresh = cwnd / 2
+  - cwnd = 1
+  - 重新进入慢开始阶段
+  - 表明网络的确堵塞了
+- 快速重传（连续收到三个相同的ack）
+  - ssthresh = cwnd / 2
+  - cwnd = cwnd / 2
+  - 进入快恢复算法
+  - 因为可以快速收到三个ack包，表明网络其实不算太差
+
 
 
 ### 快重传
@@ -146,14 +178,6 @@ TCP中使用滑动窗口机制来实现流量控制
 所谓快重传，即当Sender收到三个重复的ack，就确认有包丢失，进而把丢失的包重新发送
 
 ![å¨è¿éæå¥å¾çæè¿°](https://img-blog.csdnimg.cn/20190731184314574.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQxNDMxNDA2,size_16,color_FFFFFF,t_70)
-
-所做的事情有
-
-- 把ssthresh设置为cwnd的一半
-- 把cwnd再设置为ssthresh的值(具体实现有些为ssthresh+3)
-- 重新进入拥塞避免阶段。
-
-
 
 ### 快恢复
 
