@@ -1,4 +1,4 @@
-## 
+##
 
 集群之槽信息的记录（slots属性、numslot属性、CLUSTER ADDSLOTS命令的实现）
 

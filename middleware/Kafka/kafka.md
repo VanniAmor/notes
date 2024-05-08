@@ -860,3 +860,64 @@ chmod +x ke.sh
 ```
 
 
+
+# 十二、kafka顺序写与零拷贝
+
+- https://zhuanlan.zhihu.com/p/78335525
+- https://blog.csdn.net/weixin_37782390/article/details/103833306
+- https://blog.csdn.net/u014618114/article/details/103339989
+- https://blog.csdn.net/qq_33611327/article/details/81738195
+- https://zhuanlan.zhihu.com/p/74212155
+- https://blog.csdn.net/ajianyingxiaoqinghan/article/details/107192440?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_baidulandingword~default-1.queryctrv4&spm=1001.2101.3001.4242.2&utm_relevant_index=4
+
+
+
+传统操作下，一个IO操作，需要四次上下文切换
+
+
+
+![传统 io 操作](https://imgconvert.csdnimg.cn/aHR0cHM6Ly91cGxvYWQtaW1hZ2VzLmppYW5zaHUuaW8vdXBsb2FkX2ltYWdlcy80MjM2NTUzLTE3NGI4ZDljYzYxMTllNjcucG5n?x-oss-process=image/format,png)
+
+1. read 调用导致用户态到内核态的一次变化，同时，第一次复制开始：DMA（Direct Memory Access，直接内存存取，即不使用 CPU 拷贝数据到内存，而是 DMA 引擎传输数据到内存，用于解放 CPU） 引擎从磁盘读取 index.html 文件，并将数据放入到内核缓冲区。
+2. 发生第二次数据拷贝，即：将内核缓冲区的数据拷贝到用户缓冲区，同时，发生了一次用内核态到用户态的上下文切换。
+3. 发生第三次数据拷贝，我们调用 write 方法，系统将用户缓冲区的数据拷贝到 Socket 缓冲区。此时，又发生了一次用户态到内核态的上下文切换。
+4. 第四次拷贝，数据异步的从 Socket 缓冲区，使用 DMA 引擎拷贝到网络协议引擎。这一段，不需要进行上下文切换。
+5. write 方法返回，再次从内核态切换到用户态。
+
+
+
+这个过程中，有几次的数据拷贝操作，仅仅是拷贝，不对数据内容进行处理，这样有点浪费性能的
+
+## 顺序写（Producer到Broker）
+
+参考链接：
+
+- https://zhuanlan.zhihu.com/p/78335525
+- https://blog.csdn.net/qq_33611327/article/details/81738195
+
+
+
+kafka的顺序写采用了mmap机制，直接把log日志加载到内核buffer，然后这个buffer共享到用户态buffer
+
+![mmap 流程](https://imgconvert.csdnimg.cn/aHR0cHM6Ly91cGxvYWQtaW1hZ2VzLmppYW5zaHUuaW8vdXBsb2FkX2ltYWdlcy80MjM2NTUzLWM1ZWEwMGI3OGUxYjkzZmQucG5n?x-oss-process=image/format,png)
+
+这样对比传统的IO，可以减少一次数据的copy（即无需将user buffer 复制 内核buffer），可以直接将内核态的buffer 刷到磁盘上
+
+
+
+## 零拷贝（Broker到Consumer）
+
+所谓的零拷贝，是对操作系统的角度来说，无需将数据跨越用户态和内核态进行复制
+
+
+
+利用sendfile技术，将log日志直接从磁盘中读入内核态buffer（第一次数据拷贝，第一次上下文切换），然后直接从内核态buffer拷贝到网络协议栈（第二次复制），然后返回结果到用户态（第二次上下文切换）
+
+所以整个操作只有
+
+- 两次上下文切换
+- 两次数据拷贝
+
+
+
+![sendFile 在 2.4 版本的再一次优化](https://imgconvert.csdnimg.cn/aHR0cHM6Ly91cGxvYWQtaW1hZ2VzLmppYW5zaHUuaW8vdXBsb2FkX2ltYWdlcy80MjM2NTUzLTAwYzNlNDc5MzZlY2VhMjUucG5n?x-oss-process=image/format,png)

@@ -16,7 +16,7 @@ ziplist是list、hash、zset的底层实现之一，在Redis3.0之后已经不�
 
 ![image-20210120213240209](https://gitee.com/Vanni/pic-bed/raw/master/img/image-20210120213240209.png)
 
-zipList是由一系列特殊编码的连续内存块组成的顺序存储结构，类似于数组。zipList在内存中是连续的，但是不同于数组，为了节省内存ziplist的每个元素所占的内存大小可以不同（数组中叫元素，ziplist叫节点。）每个节点中可以用来存储一个整数或者一个字符串
+zipList是由一系列特殊编码的连续内存块组成的顺序存储结构，类似于数组。**zipList在内存中是连续的**，但是不同于数组，为了节省内存ziplist的每个元素所占的内存大小可以不同（数组中叫元素，ziplist叫节点。）每个节点中可以用来存储一个整数或者一个字符串
 
 - zlbytes：ziplist的长度（单位: 字节)，是一个32位无符号整数
 - zltail：ziplist最后一个节点的偏移量，**反向遍历ziplist或者pop尾部节点的时候有用**。
